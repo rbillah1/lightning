@@ -22,6 +22,13 @@ interface RectPrismDimensions {
 	y: number;
 	z: number;
 }
+interface FBMParams {
+	amplitude: number;
+	frequency: number;
+	octaves: number;
+	persistence: number;
+	lacunarity: number;
+}
 function get_center_of_vectors(v1: Vector3, v2: Vector3): Vector3 {
 	return v1.add(v2.sub(v1).mul(0.5));
 }
@@ -71,6 +78,15 @@ function is_in_rectangular_prism(zero_relative: Vector3, dimensions: RectPrismDi
 	}
 	available_part?.SetAttribute("IsUsing", false);
 	return false;
+}
+function evaluate_fbm(x: number, y: number, fbm_params: FBMParams): number {
+	let combined = 0;
+	for (let i = 0; i < fbm_params.octaves; i++) {
+		combined += fbm_params.amplitude * math.noise(x * fbm_params.frequency, y * fbm_params.frequency);
+		fbm_params.amplitude *= fbm_params.persistence;
+		fbm_params.frequency *= fbm_params.lacunarity;
+	}
+	return combined;
 }
 type Connection = RBXScriptConnection | undefined;
 type Object = [string, Connection];
@@ -205,6 +221,7 @@ interface LightningParams {
 	color_speed?: number;
 
 	noise_increment?: number;
+	fbm_params: FBMParams;
 	part_one: Part;
 	part_two: Part;
 }
@@ -224,6 +241,7 @@ export class Lightning {
 	private x_seed = math.random(1, SEED_RANGE) / 10;
 	private y_seed = math.random(1, SEED_RANGE) / 10;
 	private z_seed = math.random(1, SEED_RANGE) / 10;
+	private fbm_params;
 	color_range = [LightningPart.Color];
 	color_speed = 1;
 
@@ -242,6 +260,7 @@ export class Lightning {
 		this.color_range = params.color_range || this.color_range;
 		this.color_range.push(this.color_range[0]);
 
+		this.fbm_params = params.fbm_params;
 		this.part_one = params.part_one;
 		this.part_two = params.part_two;
 		Lightning.lightning_objects.push(this);
@@ -314,9 +333,9 @@ export class Lightning {
 		}
 		for (let i = 1; i < size - 1; i++) {
 			vertices[i - 1] = new Vector3(
-				this.part_one.Position.X + math.noise(this.noise_value, this.x_seed) * funkiness,
-				part_one_y + y_offset * i + math.noise(this.noise_value, this.y_seed) * funkiness,
-				this.part_one.Position.Z + math.noise(this.noise_value, this.z_seed) * funkiness,
+				this.part_one.Position.X + evaluate_fbm(this.noise_value, this.x_seed, this.fbm_params),
+				part_one_y + y_offset * i + evaluate_fbm(this.noise_value, this.y_seed, this.fbm_params),
+				this.part_one.Position.Z + evaluate_fbm(this.noise_value, this.z_seed, this.fbm_params),
 			);
 			this.noise_value += this.noise_increment;
 			if (!is_cyclic) {
