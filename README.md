@@ -1,2 +1,2 @@
 # Lightning
-## lol
+## Smooth procedurally generated lightning.
