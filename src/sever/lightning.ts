@@ -13,7 +13,7 @@ LightningPart.Shape = Enum.PartType.Block;
 LightningPart.Anchored = true;
 LightningPart.CanCollide = false;
 LightningPart.CastShadow = false;
-LightningPart.Color = Color3.fromRGB(23, 245, 204);
+LightningPart.Color = Color3.fromRGB(163, 28, 250);
 LightningPart.Material = Enum.Material.Neon;
 
 const CellMesh = Workspace.CellMesh;
@@ -297,12 +297,6 @@ export class Lightning {
 				.add(cf.LookVector.mul(direction * (vertex.Z - pos.Z)));
 		}
 	}
-	private update_color() {
-		const parts = this.parts;
-		for (let i = 0; i < parts.size(); i++) {
-			const part = parts[i];
-		}
-	}
 	update() {
 		const vertices = this.vertices;
 		const size = this.vertex_count;
@@ -342,7 +336,6 @@ export class Lightning {
 		this.noise_value = 0;
 		this.map_rotation();
 		this.visualize_parts();
-		this.update_color();
 		if (is_cyclic) {
 			this.reset_angle_offset();
 		}
